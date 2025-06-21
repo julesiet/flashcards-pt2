@@ -1,0 +1,9 @@
+* {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+html {
+  background-image: url('/japan-background.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
