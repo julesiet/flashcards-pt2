@@ -59,7 +59,32 @@ const App = () => {
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
+    console.log(randomizeQs());
   };
+
+  const randomizeQs = () => { // creates a randomized list/array of questions that are non-repeating + randomized
+    let copy = allQuestions;
+    
+    for(let i = 0; i < allQuestions.length; i++) {
+      let x = Math.floor(Math.random() * allQuestions.length);
+      let y = Math.floor(Math.random() * allQuestions.length);
+
+      let temp = copy[x];
+      copy[x] = copy[y];
+      copy[y] = temp;  
+    }
+    return copy;
+  }
+
+  const handleAnswer = () => { // checks if user input is equal to the right answer 
+    /* 
+    if (user ANSWER == actual ANSWER) { // you can use .includes if you want a "fuzzy" checking aka if you want looser checking, also make .lower or the equiv to make it non-case sensitive
+        console.log('CORRECX!');
+    } else {
+        console.log('INCORRECX!'); 
+    }
+    */
+  }
 
   return (
     <div className="container">
@@ -87,6 +112,12 @@ const App = () => {
           </div>
         </div>
       </div>
+
+      <form className='answer-container'>
+        <label className='guess-the-answer'> Guess the answer: </label>
+        <input type='text' name='answerbox' placeholder='answer here!' />
+        <button type='submit'> Submit Guess </button>
+      </form>
 
       <button onClick={handleNext} className="flashcard-button">→</button>
     </div>

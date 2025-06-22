@@ -111,3 +111,12 @@ dl dt.red{
 dl dt.yellow{
     background: #f2c715;
 }
+
+.guess-the-answer {
+  font-weight: bold;
+  color: white;
+}
+
+.answer-container {
+  padding: 10px;
+}
