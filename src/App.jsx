@@ -35,13 +35,19 @@ const App = () => {
 
   const [frontText, setFrontText] = useState("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
   const [backText, setBackText] = useState("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
+  
   const [isFlipped, setIsFlipped] = useState(false); // better way to track card flipping
-  const [answerBorder, setAnswerBorder] = useState("input-box-border-def");
-  const [userAnswer, setUserAnswer] = useState('');
-  const [questionSet, setQuestionSet] = useState([]);
-  const [index, setIndex] = useState(-1); // not incremented yet
+  const [userAnswer, setUserAnswer] = useState(''); // process user input
+  const [questionSet, setQuestionSet] = useState([]); // holds question set
+  const [index, setIndex] = useState(-1); 
+
+  // state variables JUST for styling
+  const [disabledL, setDisabledL] = useState('flashcard-button-disabled'); // changing styling of buttons based on beginning or end of card set
+  const [disabledR, setDisabledR] = useState(''); // changing styling of buttons based on beginning or end of card set
   const [colorClass, setColorClass] = useState("flashcard-color-default");
+  const [answerBorder, setAnswerBorder] = useState("input-box-border-def");
   const [image, setImage] = useState('intro.jpg');
+  
 
   const handleNext = () => {
     if (index === -1) {
@@ -49,6 +55,7 @@ const App = () => {
     }
     if (index === questionSet.length) {
       setIndex(questionSet.length);
+      setDisabledR('flashcard-button-disabled');
       setColorClass("flashcard-color-default");
       setFrontText('You have reached the end of the question set!');
       setBackText('Press back arrow to view cards in reverse.');
@@ -61,8 +68,9 @@ const App = () => {
   };
 
   const handleBack = () => {
-    if (index === 0) {
-      setIndex(0);
+    if (index === -1) {
+      setIndex(-1);
+      setDisabledL('flashcard-button-disabled');
       setFrontText("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
       setBackText("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
       setImage("intro.jpg");
@@ -78,6 +86,8 @@ const App = () => {
     if (index === -1) return; // Don't show a card if index is -1
 
     if (index != questionSet.length) {
+      setDisabledL('');
+      setDisabledR('');
       setFrontText(questionSet[index]);
       setBackText(QandA[questionSet[index]]);
       setImage(`${questionSet[index]}.jpg`);
@@ -95,6 +105,7 @@ const App = () => {
 
     setIsFlipped(false);
   }
+
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
@@ -116,7 +127,7 @@ const App = () => {
 
   const handleAnswer = () => { // checks if user input is equal to the right answer 
     console.log(userAnswer);
-    if (userAnswer.includes(backText) && !isFlipped) {
+    if (userAnswer.toLowerCase().includes(backText.toLowerCase()) && !isFlipped) {
       setAnswerBorder("input-box-border-cor");
     } else {
       setAnswerBorder("input-box-border-inc");
@@ -162,8 +173,8 @@ const App = () => {
       </form>
 
       <div className="flashcard-btn-container">
-        <button className="flashcard-button" onClick={handleBack}>←</button>
-        <button className="flashcard-button" onClick={handleNext}>→</button>
+        <button className={`flashcard-button ${disabledL}`} onClick={handleBack}>←</button>
+        <button className={`flashcard-button ${disabledR}`} onClick={handleNext}>→</button>
       </div>
     </div>
   );
