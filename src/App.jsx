@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const App = () => {
 
@@ -36,17 +36,56 @@ const App = () => {
   const [frontText, setFrontText] = useState("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
   const [backText, setBackText] = useState("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
   const [isFlipped, setIsFlipped] = useState(false); // better way to track card flipping
+  const [answerBorder, setAnswerBorder] = useState("input-box-border-def");
+  const [userAnswer, setUserAnswer] = useState('');
+  const [questionSet, setQuestionSet] = useState([]);
+  const [index, setIndex] = useState(-1); // not incremented yet
   const [colorClass, setColorClass] = useState("flashcard-color-default");
   const [image, setImage] = useState('intro.jpg');
 
   const handleNext = () => {
-    let random = Math.floor(Math.random() * allQuestions.length);
-    const question = allQuestions[random];
+    if (index === -1) {
+      randomizeQs();
+    }
+    if (index === questionSet.length) {
+      setIndex(questionSet.length);
+      setColorClass("flashcard-color-default");
+      setFrontText('You have reached the end of the question set!');
+      setBackText('Press back arrow to view cards in reverse.');
+      setImage("intro.jpg");
+    } else {
+      setIndex(prev => prev + 1);
+    }
+    setUserAnswer('');
+    setAnswerBorder("input-box-border-def");
+  };
 
-    setFrontText(question);
-    setBackText(QandA[question]);
-    setImage(`${question}.jpg`);
+  const handleBack = () => {
+    if (index === 0) {
+      setIndex(0);
+      setFrontText("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
+      setBackText("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
+      setImage("intro.jpg");
+      setColorClass("flashcard-color-default");
+    } else {
+      setIndex(prev => prev - 1);
+    }
+    setUserAnswer('');
+    setAnswerBorder("input-box-border-def");
+  }
 
+  useEffect(() => {
+    if (index === -1) return; // Don't show a card if index is -1
+
+    if (index != questionSet.length) {
+      setFrontText(questionSet[index]);
+      setBackText(QandA[questionSet[index]]);
+      setImage(`${questionSet[index]}.jpg`);
+      colorChecker(questionSet[index]);
+    }
+  }, [index, questionSet]);
+
+  const colorChecker = (question) => {
     // colors based on question displayed
     if (greetings.includes(question)) setColorClass("flashcard-color-red");
     else if (numbers.includes(question)) setColorClass("flashcard-color-green");
@@ -55,16 +94,15 @@ const App = () => {
     else setColorClass("flashcard-color-default");
 
     setIsFlipped(false);
-  };
+  }
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
-    console.log(randomizeQs());
   };
 
   const randomizeQs = () => { // creates a randomized list/array of questions that are non-repeating + randomized
-    let copy = allQuestions;
-    
+    let copy = [...allQuestions];
+
     for(let i = 0; i < allQuestions.length; i++) {
       let x = Math.floor(Math.random() * allQuestions.length);
       let y = Math.floor(Math.random() * allQuestions.length);
@@ -73,17 +111,21 @@ const App = () => {
       copy[x] = copy[y];
       copy[y] = temp;  
     }
-    return copy;
+    setQuestionSet(prevState => [...prevState, ...copy]);
   }
 
   const handleAnswer = () => { // checks if user input is equal to the right answer 
-    /* 
-    if (user ANSWER == actual ANSWER) { // you can use .includes if you want a "fuzzy" checking aka if you want looser checking, also make .lower or the equiv to make it non-case sensitive
-        console.log('CORRECX!');
+    console.log(userAnswer);
+    if (userAnswer.includes(backText) && !isFlipped) {
+      setAnswerBorder("input-box-border-cor");
     } else {
-        console.log('INCORRECX!'); 
-    }
-    */
+      setAnswerBorder("input-box-border-inc");
+    } 
+  }
+
+  const handleUserInput = (e) => {
+    e.preventDefault();
+    setUserAnswer(e.target.value);
   }
 
   return (
@@ -115,11 +157,14 @@ const App = () => {
 
       <form className='answer-container'>
         <label className='guess-the-answer'> Guess the answer: </label>
-        <input type='text' name='answerbox' placeholder='answer here!' />
-        <button type='submit'> Submit Guess </button>
+        <input type='text' name='answerbox' value={userAnswer} onChange={handleUserInput} className={answerBorder}/>
+        <button type='button' onClick={handleAnswer}> Submit Guess </button>
       </form>
 
-      <button onClick={handleNext} className="flashcard-button">→</button>
+      <div className="flashcard-btn-container">
+        <button className="flashcard-button" onClick={handleBack}>←</button>
+        <button className="flashcard-button" onClick={handleNext}>→</button>
+      </div>
     </div>
   );
 };

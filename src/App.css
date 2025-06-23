@@ -76,7 +76,14 @@
   background-color: rgba(30, 143, 255, 0.5);
 }
 
+.flashcard-btn-container {
+  display: inline;
+  margin: 0 auto;
+}
+
 .flashcard-button {
+  display: inline;
+  margin: 0 auto;
   padding: 3px 20px 3px 20px;
   font-size: 30px;
   color: white;
@@ -119,4 +126,16 @@ dl dt.yellow{
 
 .answer-container {
   padding: 10px;
+}
+
+.input-box-border-def {
+  border: none;
+}
+
+.input-box-border-inc {
+  border: 2px solid red;
+}
+
+.input-box-border-cor {
+  border: 2px solid green;
 }
