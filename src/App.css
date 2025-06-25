@@ -12,6 +12,7 @@
 
 .flashcard {
   display: flex;
+  justify-self: center;
   padding: 10px;
   width: 550px;
   height: 350px;
@@ -81,6 +82,11 @@
   margin: 0 auto;
 }
 
+.flashcard-container {
+  display: flex;
+  column-gap: 20px;
+}
+
 .flashcard-button {
   display: inline;
   margin: 0 auto;
@@ -93,7 +99,8 @@
 .question-legend {
   background-color: rgba(255, 255, 255, .5);
   text-align: left;
-  margin-bottom: 5px;
+  margin-top: 0px;
+  margin-bottom: 15px;
   font-weight: bold;
   font-size: 90%;
   padding: 10px 30px 10px 30px;
@@ -143,4 +150,33 @@ dl dt.yellow{
 .flashcard-button-disabled {
   color: grey;
   cursor: not-allowed;
+}
+
+.master-button {
+  background-color: rgba(0, 0, 0, .75);
+  font-weight: bold;
+  color: white;
+  margin: 5px;
+}
+
+.mastered-header {
+  margin-bottom: 0;
+}
+
+.mastered-container {
+  display: flex;
+  background-color: rgba(255, 255, 255, .5);
+  column-gap: 0px;
+  margin: 0;
+  flex-direction: column;
+  padding: 10px;
+  border: 2px solid rgba(0, 0, 0, .75);
+}
+
+.masterset {
+  color: white;
+}
+
+.hidden {
+  display: none;
 }

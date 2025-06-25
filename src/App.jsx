@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 const App = () => {
 
   const QandA = {
-    "Hello!": "Kon'nichiwa!",
+    "Hello!": "Konnichiwa",
     "Nice to meet you": "Onegai shimasu",
     "Excuse me": "Sumimasen",
-    "Thank you": "Arigatōgozaimasu",
+    "Thank you": "Arigatogozaimasu",
     "Yes": "Hai",
-    "No": "Īe",
+    "No": "Ie",
     "Left": "Hidari",
     "Right": "Migi",
-    "Bathroom": "Basurūmu",
+    "Bathroom": "Basurumu",
     "Entrance": "Iriguchi",
     "One (number)": "Ichi",
     "Two (number)": "Ni",
@@ -31,30 +31,37 @@ const App = () => {
   const directions = ["Left", "Right"];
   const places = ["Bathroom", "Entrance"];
 
-  const allQuestions = Object.keys(QandA);
+  let allQuestions = Object.keys(QandA);
 
   const [frontText, setFrontText] = useState("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
   const [backText, setBackText] = useState("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
   
   const [isFlipped, setIsFlipped] = useState(false); // better way to track card flipping
+  const [firstRun, setFirstRun] = useState(true); // will ONLY shuffle cards the first time, otherwise, shuffling is done on the user's request
   const [userAnswer, setUserAnswer] = useState(''); // process user input
   const [questionSet, setQuestionSet] = useState([]); // holds question set
+  const [masterSet, setMasterSet] = useState([]); // holds question set that have been mastered
   const [index, setIndex] = useState(-1); 
+  const [streak, setStreak] = useState(0);
+  const [pb, setPb] = useState(0);
 
   // state variables JUST for styling
   const [disabledL, setDisabledL] = useState('flashcard-button-disabled'); // changing styling of buttons based on beginning or end of card set
   const [disabledR, setDisabledR] = useState(''); // changing styling of buttons based on beginning or end of card set
   const [colorClass, setColorClass] = useState("flashcard-color-default");
   const [answerBorder, setAnswerBorder] = useState("input-box-border-def");
+  const [hidden, setHidden] = useState("hidden");
   const [image, setImage] = useState('intro.jpg');
   
-
   const handleNext = () => {
-    if (index === -1) {
+    if (index == -1 && firstRun) {
       randomizeQs();
+      setFirstRun(false);
     }
-    if (index === questionSet.length) {
+
+    if (index == questionSet.length) {
       setIndex(questionSet.length);
+      setHidden("hidden");
       setDisabledR('flashcard-button-disabled');
       setColorClass("flashcard-color-default");
       setFrontText('You have reached the end of the question set!');
@@ -65,11 +72,17 @@ const App = () => {
     }
     setUserAnswer('');
     setAnswerBorder("input-box-border-def");
+    /*
+    console.log("index: ", index);
+    console.log("question: ", questionSet[index]);
+    console.log(questionSet);
+    */
   };
 
   const handleBack = () => {
-    if (index === -1) {
+    if (index == -1) {
       setIndex(-1);
+      setHidden("hidden");
       setDisabledL('flashcard-button-disabled');
       setFrontText("Welcome! Click on this flashcards to flip them over, instructions are on the back of this card.");
       setBackText("The front of a card will always be a COLORED card, the back will be WHITE - English on the FRONT, Japanese on BACK! Good luck and happy studying!");
@@ -83,16 +96,19 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (index === -1) return; // Don't show a card if index is -1
+    if (index == -1) return; // Don't show a card if index is -1
 
     if (index != questionSet.length) {
       setDisabledL('');
       setDisabledR('');
+      setHidden('');
       setFrontText(questionSet[index]);
       setBackText(QandA[questionSet[index]]);
       setImage(`${questionSet[index]}.jpg`);
       colorChecker(questionSet[index]);
     }
+    console.log("Question set: ", questionSet);
+    console.log("New set of questions: ", allQuestions);
   }, [index, questionSet]);
 
   const colorChecker = (question) => {
@@ -106,9 +122,9 @@ const App = () => {
     setIsFlipped(false);
   }
 
-
   const flipCard = () => {
     setIsFlipped(!isFlipped);
+    setAnswerBorder("input-box-border-def");
   };
 
   const randomizeQs = () => { // creates a randomized list/array of questions that are non-repeating + randomized
@@ -122,15 +138,17 @@ const App = () => {
       copy[x] = copy[y];
       copy[y] = temp;  
     }
-    setQuestionSet(prevState => [...prevState, ...copy]);
+    setQuestionSet([...copy]);
   }
 
-  const handleAnswer = () => { // checks if user input is equal to the right answer 
-    console.log(userAnswer);
+  const handleAnswer = () => { // checks if user input is equal to the right answer (MUST be on the question side to count as correct)
     if (userAnswer.toLowerCase().includes(backText.toLowerCase()) && !isFlipped) {
       setAnswerBorder("input-box-border-cor");
+      setStreak(prev => prev + 1);
     } else {
       setAnswerBorder("input-box-border-inc");
+      if (pb < streak) setPb(streak);
+      setStreak(0);
     } 
   }
 
@@ -139,12 +157,33 @@ const App = () => {
     setUserAnswer(e.target.value);
   }
 
+  const masteringCards = () => {
+    const currentCard = questionSet[index];
+
+    // add current card to mastered list
+    setMasterSet(prev => [...prev, currentCard]);
+
+    // remove it from the question set
+    const newSet = questionSet.filter((_, i) => i !== index);
+    setQuestionSet(newSet);
+
+    // adjust index:
+    if (index >= newSet.length) {
+      // if we were at the end, go back one
+      setIndex(newSet.length - 1);
+    } else {
+      // otherwise, stay at the same position (which now shows the next card)
+      setIndex(index);
+    }
+};
+
+
   return (
     <div className="container">
       <div className="header-container">
         <h1> Basic Japanese! 🇯🇵 </h1>
         <h2>Departing to Japan soon? Or just curious about the language of Japan? Test your knowledge here!</h2>
-        <h4>Number of cards: {allQuestions.length}</h4>
+        <h4>Number of cards: {allQuestions.length}  //  Current streak: {streak} | Longest streak: {pb} </h4>
       </div>
 
       <dl className="question-legend">
@@ -154,6 +193,17 @@ const App = () => {
         <dt className="flashcard-color-blue"></dt><dd>places</dd>
       </dl>
 
+      <button className={`master-button ${hidden}`} onClick={masteringCards}> mastered? ★ </button>
+
+      <div className='flashcard-container'>
+        <div className='mastered-container'>
+          <h3 className='mastered-header'> mastered questions: </h3>
+          <ul>
+            {masterSet.map((question) => (
+              <li key={question}> {question} </li>
+            ))}
+          </ul>
+        </div>
       <div className="flashcard" onClick={flipCard}>
         <div className={`flashcard-inner ${isFlipped ? "flip-state" : ""}`}>
           <div className={`flashcard-front ${colorClass}`}>
@@ -165,6 +215,7 @@ const App = () => {
           </div>
         </div>
       </div>
+      </div>
 
       <form className='answer-container'>
         <label className='guess-the-answer'> Guess the answer: </label>
@@ -175,7 +226,9 @@ const App = () => {
       <div className="flashcard-btn-container">
         <button className={`flashcard-button ${disabledL}`} onClick={handleBack}>←</button>
         <button className={`flashcard-button ${disabledR}`} onClick={handleNext}>→</button>
+        <button className="flashcard-button" onClick={randomizeQs}> Shuffle Cards </button>
       </div>
+
     </div>
   );
 };
